@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:2px solid black;
+    background-color: #87ceeb;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+
+var canvasWidth = 1200;
+var canvasHeight = 400;
+
+var player_y_start = 200;
+
+var speed = 1;
+
+var player1;
+
+var player2;
+
+
+var fallSpeed = 20;
+var interval = setInterval(updateCanvas, 20);
+
+var isJumping = false;
+var jumpSpeed = 0;
+
+var stopped = true;
+
+var block;
+var first = 0;
+var phase2 = false;
+var winner = 3;
+
+// Create a score of 0 to start with
+var score = 0;
+// Create a variable to hold our scoreLabel
+var scoreLabel;
+
+// Create a variable to hold our Title text
+var title;
+
+function startGame() {
+    gameCanvas.start();
+    player1 = new createPlayer(30, 30, 200,player_y_start, "green");
+    player2 = new createPlayer(30, 30, 800,player_y_start, "red");
+    block = new createBlock();
+    // Assign your scoreLabel variable a value from scoreLabel()
+    scoreLabel = new createScoreLabel(10, 30);
+    title = new createTitle(canvasWidth/2 -300,canvasHeight*0.25)
+}
+
+var gameCanvas = {
+    canvas: document.createElement("canvas"),
+    start: function() {
+        score = 0;
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+    },
+    stop: function() {
+        console.log("Stopped");
+        stopped=true;
+        phase2=false;
+    }
+}
+
+function createPlayer(width, height, x,start_y,color) {
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = start_y;
+    this.color = color;
+    this.confirmed = false;
+    this.score = 0;
+    
+    this.draw = function() {
+        ctx = gameCanvas.context;
+        ctx.fillStyle = color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+    this.makeFall = function() {
+        if (!isJumping) {
+            this.y += fallSpeed;
+            fallSpeed += 0.1;
+            this.stopPlayer();
+        }
+    }
+    this.stopPlayer = function() {
+        var ground = canvasHeight - this.height;
+        if (this.y > ground) {
+            this.y = ground;
+        }
+    }
+    this.jump = function() {
+        if (isJumping) {
+            this.y -= jumpSpeed;
+            jumpSpeed += 0.3;
+        }
+    }
+
+    this.update_pos = function(_x,_y){
+        this.x = _x;
+        this.y = _y;
+        console.log('update',_x,_y,this.x,this.y);
+    }
+
+    this.drawLocation = function(){
+        if(this.color == "green") {
+            ctx = gameCanvas.context;
+            ctx.font = "25px Marker Felt";
+            ctx.fillStyle = "black";
+            ctx.fillText("Player1 loc: " + player1.x + ", " + (canvasHeight-player1.y), 10, canvasHeight);
+        } else {
+            ctx = gameCanvas.context;
+            ctx.font = "25px Marker Felt";
+            ctx.fillStyle = "black";
+            ctx.fillText("Player 2 loc: " + player2.x + ", " + (canvasHeight-player2.y), canvasWidth - 400, canvasHeight);
+        }  
+    }
+}
+
+function createBlock() {
+    var width = randomNumber(10, 50);
+    var height = randomNumber(10, 200);
+    var speed = randomNumber(2, 6);
+    
+    this.x = canvasWidth;
+    this.y = canvasHeight - height;
+    
+    this.draw = function() {
+        ctx = gameCanvas.context;
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x, this.y, width, height);
+    }
+    this.attackPlayer = function() {
+        this.x -= speed;
+        this.returnToAttackPosition();
+    }
+    this.returnToAttackPosition = function() {
+        if (this.x < 0 || stopped) {
+            width = randomNumber(10, 50);
+            height = randomNumber(50, 200);
+            speed = randomNumber(4, 6);
+            this.y = canvasHeight - height;
+            this.x = canvasWidth;
+            // Increase your score if your block made it to the edge
+            score++;
+        }
+    }
+}
+
+function detectCollision() {
+    var playerLeft = player1.x
+    var playerRight = player1.x + player1.width;
+    var blockLeft = block.x;
+    var blockRight = block.x + block.width;
+    
+    var playerBottom = player1.y + player1.height;
+    var blockTop = block.y;
+    
+    if (playerRight > blockLeft && 
+        playerLeft < blockLeft && 
+        playerBottom > blockTop) {
+        // console.log('Collision detected')
+        gameCanvas.stop();
+    }
+}
+
+function createScoreLabel(x, y) {
+    this.score = 0;  
+    this.x = x;
+    this.y = y;
+    this.draw = function() {
+        ctx = gameCanvas.context;
+        ctx.font = "25px Marker Felt";
+        ctx.fillStyle = "black";
+        ctx.fillText(this.text, this.x, this.y);
+    }
+}
+
+function createTitle(x, y) {
+    this.title = 0;  
+    this.x = x;
+    this.y = y;
+    this.draw = function() {
+        ctx = gameCanvas.context;
+        ctx.font = "50px Marker Felt";
+        ctx.fillStyle = "black";
+        ctx.fillText(this.text, this.x, this.y);
+    }
+}
+
+function updateCanvas() {
+    //detectCollision();
+    
+    ctx = gameCanvas.context;
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+    if(!phase2 && player1.confirmed && player2.confirmed) {
+        if(first == 1) {
+            console.log("1 was first ",player1.dig_location.x,player1.dig_location.y);
+            if(player1.dig_location.x ==  194 && player1.dig_location.y == 308){
+                player1.score += 2;
+                player2.score += (player2.dig_location.x ==  894 && player2.dig_location.y == 208);
+            } else {
+                first = 2;
+            }
+        } else {
+            console.log("2 was first ",player1.dig_location.x,player1.dig_location.y);
+            if(player2.dig_location.x ==  894 && player2.dig_location.y == 208){
+                player2.score += 2;
+                player1.score += (player1.dig_location.x ==  194 && player1.dig_location.y == 308);
+            } else {
+                first = 1;
+            }
+        }
+        phase2 = true;
+    }
+    if (!stopped && !phase2){
+        //player1.makeFall();
+        player1.draw();
+        player1.drawLocation()
+
+        //player2.makeFall();
+        player2.draw();
+        player2.drawLocation();
+
+        //player1.jump();
+        
+        //block.draw();
+        //block.attackPlayer();
+        
+        // Redraw your score and update the value
+        scoreLabel.text = "SCORE: " + score;
+        scoreLabel.draw();
+    } else if(phase2 && !stopped){
+        title.text = "Player " + first + "Please enter the similarity proof: ASA/ASA" 
+        title.draw();
+    }else{
+        if (winner == 3){
+            title.text = "TITLE: Press tab to start. Score was: " + score;
+            title.draw();
+        } else {
+            document.getElementById("score1").innerHTML = "Player 1 score: " + player1.score;
+            document.getElementById("score2").innerHTML = "Player 2 score: " + player2.score;
+            title.text = "Winner: " + first;
+            title.draw();
+        }
+    }
+}
+
+function randomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function resetJump() {
+    jumpSpeed = 0;
+    isJumping = false;
+}
+
+document.body.onkeydown = function(e) {
+
+    // Jump
+    if (e.keyCode == 32) {
+        isJumping = true;
+        setTimeout(function() { resetJump(); }, 1000);
+    }
+
+    // Stop
+    if (e.keyCode == 9 && stopped) {
+        block.returnToAttackPosition()
+        console.log('tab pressed');
+        gameCanvas.start();
+        stopped = false;
+        
+    }
+
+    // w moves player 1 up
+    if(e.keyCode == 87) {
+        console.log('w pressed', player1.y);
+        player1.update_pos(player1.x,player1.y-speed);
+        console.log('w pressed', player1.y);
+    }
+    // a moves player 1 left
+    if(e.keyCode == 65) {
+        console.log('w pressed', player1.y);
+        player1.update_pos(player1.x-speed,player1.y);
+        console.log('w pressed', player1.y);
+    }
+    // s moves player 1 down
+    if(e.keyCode == 83) {
+        player1.update_pos(player1.x,player1.y + speed);
+        console.log('s pressed', player1.y);
+    }
+    // d moves player 1 right
+    if(e.keyCode == 68) {
+        player1.update_pos(player1.x+speed,player1.y);
+        console.log('d pressed', player1.y);
+    }
+
+    // q confirms player 2 choice
+    if(e.keyCode == 81 && !player1.confirmed) {
+        player1.dig_location = {
+            x: player1.x,
+            y: canvasHeight-player1.y
+        };
+        player1.confirmed = true;
+        if(!player2.confirmed){
+            first=1;
+        }
+    }
+
+    // up moves player 2 up
+    if(e.keyCode == 38) {
+        player2.update_pos(player2.x,player2.y-speed);
+        console.log('w pressed', player1.y);
+    }
+    // left moves player 2 left
+    if(e.keyCode == 37) {
+        player2.update_pos(player2.x-speed,player2.y);
+        console.log('w pressed', player2.y);
+    }
+    // down moves player 2 down
+    if(e.keyCode == 40) {
+        player2.update_pos(player2.x,player2.y + speed);
+        console.log('s pressed', player2.y);
+    }
+    // right moves player 2 right
+    if(e.keyCode == 39) {
+        player2.update_pos(player2.x+speed,player2.y);
+        console.log('d pressed', player2.y);
+    }
+    // / confirms player 2
+    if (e.keyCode == 191 && !player2.confirmed) {
+        player2.dig_location = {
+            x: player2.x,
+            y: canvasHeight-player2.y
+        };
+        player2.update_pos(player2.x+speed,player2.y);
+        console.log('d pressed', player2.y);
+        player2.confirmed=true;
+        if(!player1.confirmed){
+            first=2;
+        }
+    }
+
+    // Enter confirms proof choice
+    if(e.keyCode == 13 && phase2) {
+        if(first == 1){
+            var content = document.getElementById("box1").value;
+            console.log("Content 1: ", content)
+            if(content == "ASA" || content == "AAA") {
+                player1.score += 1;
+            }
+            winner = 1; 
+        } else {
+            var content = document.getElementById("box2").value;
+            console.log("Content 2: ", content)
+            if(content == "ASA" || content == "AAA") {
+                player2.score += 1;
+            }
+            winner = 2; 
+        }
+
+        gameCanvas.stop()
+    }
+}
+
+
+</script>
+<br>
+
+<div class="container mx-auto px-6 text-center">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <!-- Featured Card 1 -->
+        <div class="bg-gray-800 rounded-lg p-6 size-90 shadow-lg">
+            <img src="/static/problem.png" alt="Esports Tournaments" class="mb-4 rounded-md">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-4">Move to C</h3>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg p-10 size-90 shadow-lg">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-12" id="score1">Player 1 score: 0</h3>
+            <input type="text" id="box1">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mt-12" id="score2">Player 2 score: 0</h3>
+            <input type="text" class="mt-10" id="box2" name="addLinks">
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
