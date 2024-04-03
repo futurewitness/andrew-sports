@@ -53,7 +53,7 @@ function startGame() {
     block = new createBlock();
     // Assign your scoreLabel variable a value from scoreLabel()
     scoreLabel = new createScoreLabel(10, 30);
-    title = new createTitle(canvasWidth/2 -300,canvasHeight*0.25)
+    title = new createTitle(canvasWidth/8 ,canvasHeight*0.25)
 }
 
 var gameCanvas = {
@@ -241,7 +241,7 @@ function updateCanvas() {
         scoreLabel.text = "SCORE: " + score;
         scoreLabel.draw();
     } else if(phase2 && !stopped){
-        title.text = "Player " + first + "Please enter the similarity proof: ASA/ASA" 
+        title.text = "Player " + first + " enter the similarity type: ASA/AAA/..." 
         title.draw();
     }else{
         if (winner == 3){
