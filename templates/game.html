@@ -382,14 +382,22 @@ document.body.onkeydown = function(e) {
         <!-- Featured Card 1 -->
         <div class="bg-gray-800 rounded-lg p-6 size-90 shadow-lg">
             <img src="/static/problem.png" alt="Esports Tournaments" class="mb-4 rounded-md">
-            <h3 class="text-xl lg:text-2xl text-white font-bold mb-4">Move to C</h3>
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-4">Objective: Move to the location marked by C. You start at B. Use your knowledge of similar triangles to get to the target location first!</h3>
         </div>
 
         <div class="bg-gray-800 rounded-lg p-10 size-90 shadow-lg">
-            <h3 class="text-xl lg:text-2xl text-white font-bold mb-12" id="score1">Player 1 score: 0</h3>
-            <input type="text" id="box1">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-6" id="score1">Player 1 score: 0</h3>
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-6" id="score">Player 1 B location: (200,300)</h3>
+            <input type="text" class="mb-6" id="box1">
             <h3 class="text-xl lg:text-2xl text-white font-bold mt-12" id="score2">Player 2 score: 0</h3>
-            <input type="text" class="mt-10" id="box2" name="addLinks">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-6" id="score">Player 2 B location: (900,300)</h3>
+            <input type="text" id="box2" name="addLinks">
+        </div>
+        <div class="bg-gray-800 rounded-lg p-10 size-90 shadow-lg">
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-12" id="score1">Player 1 movement: WASD</h3>
+            <h3 class="text-xl lg:text-2xl text-white font-bold mb-12" id="score1">Player 1 confirm location: q</h3>
+            <h3 class="text-xl lg:text-2xl text-white font-bold mt-12" id="score2">Player 2 movement: arrow keys</h3>
+            <h3 class="text-xl lg:text-2xl text-white font-bold mt-12" id="score2">Player 2 confirm location: /</h3>
         </div>
     </div>
 </div>
